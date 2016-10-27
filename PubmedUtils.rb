@@ -2,7 +2,7 @@ require 'anemone'
 require 'Nokogiri'
 
 class PubmedUtils
-	def self.parseEmail(page)
+	def self.parse_email(page)
 		regex_email_address =  /([\w\-\_\.]+@{1}[\w\-\_]+(\.[\w\-\_]+)+)/
 		doc = Nokogiri::HTML.parse(page.body)
 		table = [] #note: index0 will remain "nil" and need to be ignored
@@ -30,6 +30,7 @@ class PubmedUtils
 				end
 			else
 				p "no match tags!!"
+				p page.url
 			end
 		end
 
@@ -50,7 +51,7 @@ class PubmedUtils
 				table[num]["description"] = str
 				table[num]["hasEmail"]=true
 				table[num]["url"]=page.url
-				table[num]["page_title"]=page_title
+				table[num]["paper_title"]=page_title
 			end
 		end
 
@@ -61,5 +62,21 @@ class PubmedUtils
 			end
 		end
 		return ret_array
+	end
+
+	def self.to_array_for_csv(hash)
+		ret_array = []
+		hash.values.each do |item|
+			if item.instance_of?(Array) then
+				ret_array.push(item.join(" / "))
+			else
+				ret_array.push(item.to_s)
+			end
+		end
+		return ret_array
+	end
+
+	def self.generate_header
+		["name", "email", "description", "url", "paper_title", "hasEmail?"]
 	end
 end

@@ -7,7 +7,7 @@ require 'csv'
 
 
 # BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=1000"
-BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=20"
+BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=1000"
 ABSTRACT_PAGE_BASE_URL = "https://www.ncbi.nlm.nih.gov/pubmed/"
 TERM = "&term="
 RETSTART = "&retstart="
@@ -53,16 +53,17 @@ id_list.each do |id|
 end
 Anemone.crawl(abstract_page_url_list, :depth_limit => 0) do |anemone|
 	anemone.on_every_page do |page|
-		table = PubmedUtils.parseEmail(page)
+		table = PubmedUtils.parse_email(page)
 		table.each do |item|
-			array_for_output.push(item.values)
+			array_for_output.push(item)
 		end
 	end
 end
 
 #generate output as csv
 CSV.open(output_file_name,'w') do |row|
+	row << PubmedUtils.generate_header
 	array_for_output.each do |item|
-		row << item
+		row << PubmedUtils.to_array_for_csv(item)
 	end
 end
