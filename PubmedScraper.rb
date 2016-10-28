@@ -6,8 +6,8 @@ require './PubmedUtils.rb'
 require 'csv'
 
 
-# BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=1000"
-BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=1000"
+BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&sort=relevance&reldate=1825&retmax=1000"
+# BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=20"
 ABSTRACT_PAGE_BASE_URL = "https://www.ncbi.nlm.nih.gov/pubmed/"
 TERM = "&term="
 RETSTART = "&retstart="
@@ -34,8 +34,8 @@ total_count = result[ESEARCHRESULT]["count"].to_i
 id_list.concat(result[ESEARCHRESULT]["idlist"])
 
 #get ids
-# num_page = total_count / RETMAX
-num_page=1
+num_page = total_count / RETMAX
+# num_page=1
 (1..num_page).each do |page|
 	ret_start = RETMAX * page
 	search_page_url_list.push(BASE_URL + RETSTART + ret_start.to_s + TERM + query_word)
@@ -47,15 +47,22 @@ Anemone.crawl(search_page_url_list, :depth_limit => 0) do |anemone|
 	end
 end
 
+
 #access to each page with ids and get email if they have it
 id_list.each do |id|
 	abstract_page_url_list.push(ABSTRACT_PAGE_BASE_URL + id)
 end
+counter = 0
 Anemone.crawl(abstract_page_url_list, :depth_limit => 0) do |anemone|
 	anemone.on_every_page do |page|
+		counter += 1
+		# p counter
 		table = PubmedUtils.parse_email(page)
 		table.each do |item|
 			array_for_output.push(item)
+		end
+		if (counter%1000)==0 then
+			p "current page is " + (counter/1000).to_s + " out of " + num_page.to_s
 		end
 	end
 end

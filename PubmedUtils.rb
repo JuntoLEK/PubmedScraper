@@ -42,6 +42,7 @@ class PubmedUtils
 
 			if str.length==0 
 				p "break!!!!!!!!!!"
+				p page.url
 				break
 			end
 
